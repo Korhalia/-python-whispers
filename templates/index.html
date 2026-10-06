@@ -1,0 +1,138 @@
+Production-Ready index.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="Create original music by describing the sound, mood, and style you want."
+    >
+
+    <title>AI Music Generator</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container">
+            <h1>🎵 AI Music Generator</h1>
+            <p>Practical music creation from a simple description.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero" aria-labelledby="generator-title">
+            <h2 id="generator-title">Create Your Own Music</h2>
+
+            <p>
+                Describe the style, mood, instruments, and tempo you want.
+            </p>
+
+            {% if error %}
+                <div class="messages error-message" role="alert" aria-live="assertive">
+                    <p>{{ error }}</p>
+                </div>
+            {% endif %}
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="messages" role="status" aria-live="polite">
+                        {% for message in messages %}
+                            <p>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form
+                class="generator-form"
+                method="POST"
+                action="{{ url_for('generate') }}"
+                accept-charset="UTF-8"
+            >
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-group">
+                    <label for="prompt">Music description</label>
+
+                    <textarea
+                        id="prompt"
+                        name="prompt"
+                        rows="6"
+                        maxlength="1000"
+                        placeholder="Example: An upbeat electronic song with piano, deep bass, and energetic drums"
+                        required
+                        aria-describedby="prompt-help"
+                    >{{ prompt or '' }}</textarea>
+
+                    <small id="prompt-help">
+                        Be specific about the genre, mood, instruments, and tempo.
+                        Maximum 1,000 characters.
+                    </small>
+                </div>
+
+                <button type="submit">
+                    Generate Music
+                </button>
+            </form>
+        </section>
+
+        {% if generated_audio_url %}
+            <section
+                class="generated-result"
+                aria-labelledby="result-title"
+            >
+                <h2 id="result-title">Your Generated Music</h2>
+
+                <div class="song-card">
+                    <div>
+                        <h3>
+                            {{ generated_title or "Generated Track" }}
+                        </h3>
+
+                        <p>
+                            Created from your music description.
+                        </p>
+                    </div>
+
+                    <audio controls preload="metadata">
+                        <source
+                            src="{{ generated_audio_url }}"
+                            type="audio/wav"
+                        >
+                        Your browser does not support WAV audio playback.
+                    </audio>
+
+                    <a
+                        href="{{ generated_audio_url }}"
+                        download="generated_song.wav"
+                    >
+                        Download music
+                    </a>
+                </div>
+            </section>
+        {% else %}
+            <section class="empty-state" aria-labelledby="empty-title">
+                <h2 id="empty-title">No music generated yet</h2>
+                <p>
+                    Enter a description above and select
+                    <strong>Generate Music</strong> to create your first track.
+                </p>
+            </section>
+        {% endif %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; {{ current_year or 2025 }} AI Music Generator</p>
+        </div>
+    </footer>
+</body>
+</html>
